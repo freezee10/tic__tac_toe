@@ -1,0 +1,18 @@
+* {
+  box-sizing: border-box;
+}
+
+.board {
+  width: 100px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+
+}
+
+.slot {
+  width: 15px;
+  border: 1px solid black;
+}

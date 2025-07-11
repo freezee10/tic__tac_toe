@@ -7,10 +7,23 @@ function createPlayer(marker)
 const GameFlow = (function() {
   const player1 = createPlayer("O");
   const player2 = createPlayer("X");
-  const marker = "O";
-  const proceedTurn = function(marker, x, y) 
+  let marker = "O";
+  const proceedTurn = function(mkr, x, y) 
   {
-    GameBoard.board[x][y] = marker;
+    if(GameBoard.board[x][y] === "O" || GameBoard.board[x][y] === "X")
+    {
+      return true;
+    }
+    GameBoard.board[x][y] = mkr;
+  }
+
+  const getMarker = function()
+  {
+    return marker;
+  }
+
+  const flipMarker = function()
+  {
     if(marker === "O")
     {
       marker = "X";
@@ -19,9 +32,7 @@ const GameFlow = (function() {
     {
       marker = "O";
     }
-
   }
-
   const checkTieOrWin = function()
   {
     if(GameBoard.board[0][1] === GameBoard.board[0][0] && GameBoard.board[0][2] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "_")
@@ -81,7 +92,7 @@ const GameFlow = (function() {
     return { status: "keep", marker: "none"};
   }
 
-  return { proceedTurn, checkTieOrWin }
+  return { getMarker, proceedTurn, checkTieOrWin, flipMarker }
 }) ();
 
 let GameBoard = {
@@ -93,18 +104,62 @@ let GameBoard = {
   ,
   printBoard: function () {
     console.log(this.board);
+  },
+  createHTML: function() {
+    let html = "";
+    for(let i = 0; i < 3; i++)
+    {
+      for(let j = 0; j < 3; j++)
+      {
+        html += `<div class="slot" data-slot="${i}-${j}"> ${GameBoard.board[i][j]} </div>`;
+      }
+    }
+    document.querySelector('.board').innerHTML = html;
+    // put in the html
   }
 }
 
+const PlayGame = (function() {
+  const domFunctionality = function()
+  {
+    let slots = document.querySelectorAll('.slot');
+    slots.forEach((slot) => {
+      slot.addEventListener('click', () => {
+        let x = +slot.dataset.slot.substring(0,1);
+        let y = +slot.dataset.slot.substring(2);
+        let marker = GameFlow.getMarker();
+        let end = GameFlow.proceedTurn(marker, x, y);
+        if(end)
+        {
+          return;
+        }
+      
+        document.querySelector(`[data-slot="${x}-${y}"]`).innerHTML = marker;
+        GameFlow.flipMarker();
 
-GameFlow.proceedTurn("X", 0, 1);
-GameFlow.proceedTurn("X", 0, 0);
-GameFlow.proceedTurn("X", 0, 0);
-GameFlow.proceedTurn("X", 2, 2);
-GameFlow.proceedTurn("X", 1, 1);
+        // check for end
+        if(GameFlow.checkTieOrWin().status === "victory")
+        {
+          document.querySelector('.result').innerHTML = "winner;";
+        }
+        else if(GameFlow.checkTieOrWin().status === "tie")
+        {
+           document.querySelector('.result').innerHTML = "tie;";
+        }
+      })
+    })
+  }
 
 
+ 
+ 
+ return { domFunctionality};
+ 
+ 
+ }) ();
 
+GameBoard.createHTML();
+PlayGame.domFunctionality();
 
-let stat = GameFlow.checkTieOrWin();
-console.log(stat);
+//let stat = GameFlow.checkTieOrWin();
+//console.log(stat);
