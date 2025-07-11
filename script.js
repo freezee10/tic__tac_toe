@@ -35,39 +35,39 @@ const GameFlow = (function() {
   }
   const checkTieOrWin = function()
   {
-    if(GameBoard.board[0][1] === GameBoard.board[0][0] && GameBoard.board[0][2] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "_")
+    if(GameBoard.board[0][1] === GameBoard.board[0][0] && GameBoard.board[0][2] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "")
     {
        // check to make sure all are -> non _
       
        return { status: "victory", marker: GameBoard.board[0][0] };
     } 
-    else if(GameBoard.board[1][1] === GameBoard.board[1][0] && GameBoard.board[1][2] === GameBoard.board[1][0] && GameBoard.board[1][0] !== "_")
+    else if(GameBoard.board[1][1] === GameBoard.board[1][0] && GameBoard.board[1][2] === GameBoard.board[1][0] && GameBoard.board[1][0] !== "")
     {
       return { status: "victory", marker: GameBoard.board[1][0] };
     }
-    else if(GameBoard.board[2][1] === GameBoard.board[2][0] && GameBoard.board[2][2] === GameBoard.board[0][0] && GameBoard.board[2][0] !== "_")
+    else if(GameBoard.board[2][1] === GameBoard.board[2][0] && GameBoard.board[2][2] === GameBoard.board[0][0] && GameBoard.board[2][0] !== "")
     {
       return { status: "victory", marker: GameBoard.board[2][0] };
     }  // checks horizontal victories
       // checks vertical victories
-    else if(GameBoard.board[1][0] === GameBoard.board[0][0] && GameBoard.board[2][0] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "_")
+    else if(GameBoard.board[1][0] === GameBoard.board[0][0] && GameBoard.board[2][0] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "")
     {
       return { status: "victory", marker: GameBoard.board[0][0] };
     } 
-    else if( GameBoard.board[1][1] === GameBoard.board[0][1] && GameBoard.board[2][1] === GameBoard.board[0][1] && GameBoard.board[0][1] !== "_" )
+    else if( GameBoard.board[1][1] === GameBoard.board[0][1] && GameBoard.board[2][1] === GameBoard.board[0][1] && GameBoard.board[0][1] !== "" )
     {
       return { status: "victory", marker: GameBoard.board[0][1] };
     }
-    else if( GameBoard.board[1][2] === GameBoard.board[0][2] && GameBoard.board[2][2] === GameBoard.board[0][2] && GameBoard.board[0][2] !== "_" )
+    else if( GameBoard.board[1][2] === GameBoard.board[0][2] && GameBoard.board[2][2] === GameBoard.board[0][2] && GameBoard.board[0][2] !== "" )
     {
       return { status: "victory", marker: GameBoard.board[0][2] };
     }
-    else if( GameBoard.board[1][1] === GameBoard.board[0][0] && GameBoard.board[2][2] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "_")
+    else if( GameBoard.board[1][1] === GameBoard.board[0][0] && GameBoard.board[2][2] === GameBoard.board[0][0] && GameBoard.board[0][0] !== "")
     {
       return { status: "victory", marker: GameBoard.board[0][0] };
     }
     // checks diagonal victorie
-    else if( GameBoard.board[1][1] === GameBoard.board[0][2] && GameBoard.board[2][0] === GameBoard.board[0][2] && GameBoard.board[0][2] !== "_")
+    else if( GameBoard.board[1][1] === GameBoard.board[0][2] && GameBoard.board[2][0] === GameBoard.board[0][2] && GameBoard.board[0][2] !== "")
     {
       return { status: "victory", marker: GameBoard.board[0][2] };
     }
@@ -78,7 +78,7 @@ const GameFlow = (function() {
     {
       for(e of row)
       {
-        if(e !== "_")
+        if(e !== "")
         {
           count++;
         }
@@ -97,9 +97,9 @@ const GameFlow = (function() {
 
 let GameBoard = {
   board: [
-    ["_","_","_"],
-    ["_","_","_"],
-    ["_","_","_"]
+    ["","",""],
+    ["","",""],
+    ["","",""]
   ]
   ,
   printBoard: function () {
@@ -120,13 +120,11 @@ let GameBoard = {
 }
 
 const PlayGame = (function() {
-  const domFunctionality = function()
+  const domFunc = function(e) 
   {
-    let slots = document.querySelectorAll('.slot');
-    slots.forEach((slot) => {
-      slot.addEventListener('click', () => {
-        let x = +slot.dataset.slot.substring(0,1);
-        let y = +slot.dataset.slot.substring(2);
+     document.querySelector('#click').play();
+     let x = +e.target.dataset.slot.substring(0,1);
+       let y = +e.target.dataset.slot.substring(2);
         let marker = GameFlow.getMarker();
         let end = GameFlow.proceedTurn(marker, x, y);
         if(end)
@@ -134,19 +132,73 @@ const PlayGame = (function() {
           return;
         }
       
-        document.querySelector(`[data-slot="${x}-${y}"]`).innerHTML = marker;
+        let output = document.querySelector(`[data-slot="${x}-${y}"]`);
+        updateWithAnimation(output, marker);
         GameFlow.flipMarker();
 
         // check for end
         if(GameFlow.checkTieOrWin().status === "victory")
         {
-          document.querySelector('.result').innerHTML = "winner;";
+          let res = document.createElement('div');
+          res.textContent = `${GameFlow.checkTieOrWin().marker} Wins!`;
+          document.querySelector('.outer').appendChild(res);
+          
+          removeDomFunctionality();
+          const restartBtn = document.createElement('button');
+          restartBtn.textContent = "restart";
+          restartBtn.classList.add('restartBtn');
+          const ou = document.createElement('div');
+          ou.appendChild(restartBtn);
+          document.querySelector('.outer').appendChild(ou);
+            restartBtn.addEventListener('click', () => {
+              res.remove();
+               ou.remove();
+                  restartBtn.remove();
+                 GameBoard.board = [["","",""],
+                                   ["","",""],
+                                   ["","",""]];
+             GameBoard.createHTML();
+             PlayGame.domFunctionality();
+          })
         }
         else if(GameFlow.checkTieOrWin().status === "tie")
         {
-           document.querySelector('.result').innerHTML = "tie;";
+          let res = document.createElement('div');
+          res.textContent = `${GameFlow.checkTieOrWin().marker} Wins!`;
+          document.querySelector('.outer').appendChild(res);
+          
+          removeDomFunctionality();
+          const restartBtn = document.createElement('button');
+          restartBtn.textContent = "restart";
+          restartBtn.classList.add('restartBtn');
+          const ou = document.createElement('div');
+          ou.appendChild(restartBtn);
+          document.querySelector('.outer').appendChild(ou);
+            restartBtn.addEventListener('click', () => {
+                  res.remove();
+                  ou.remove();
+                  restartBtn.remove();
+                 GameBoard.board = [["","",""],
+                                   ["","",""],
+                                   ["","",""]];
+             GameBoard.createHTML();
+             PlayGame.domFunctionality();
+          })
         }
-      })
+  }
+  const domFunctionality = function()
+  {
+    let slots = document.querySelectorAll('.slot');
+    slots.forEach((slot) => {
+      slot.addEventListener('click', domFunc);
+    })
+  }
+
+  const removeDomFunctionality = function()
+  {
+    let slots = document.querySelectorAll('.slot');
+    slots.forEach((slot) => {
+      slot.removeEventListener('click', domFunc);
     })
   }
 
@@ -158,8 +210,28 @@ const PlayGame = (function() {
  
  }) ();
 
-GameBoard.createHTML();
-PlayGame.domFunctionality();
+// start logic here
 
-//let stat = GameFlow.checkTieOrWin();
-//console.log(stat);
+
+
+
+document.querySelector("#start-button").addEventListener('click', () => {
+  GameBoard.createHTML();
+  PlayGame.domFunctionality();
+})
+
+
+
+function updateWithAnimation(element, newHTML) {
+  // Remove previous animation class if already there
+  element.classList.remove('animate-show');
+
+  // Update innerHTML
+  element.innerHTML = newHTML;
+
+  // Force reflow (important!)
+  void element.offsetWidth;
+
+  // Re-add animation class
+  element.classList.add('animate-show');
+}
